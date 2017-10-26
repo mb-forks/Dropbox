@@ -163,7 +163,7 @@ namespace Dropbox
 
             if (buffer.Count > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload_Start(session_id, buffer.Array, accessToken, cancellationToken);
+                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken);
                 session_id = result.session_id;
                 offset += buffer.Count;
                 buffer = await FillBuffer(stream, cancellationToken);
@@ -171,13 +171,13 @@ namespace Dropbox
 
             while (buffer.Count > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken);
+                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken);
                 offset += buffer.Count;
                 buffer = await FillBuffer(stream, cancellationToken);
             }
 
             if (offset > 0)
-                await _dropboxContentApi.ChunkedUpload_Commit(path, uploadId, offset, accessToken, cancellationToken);
+                await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken);
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)

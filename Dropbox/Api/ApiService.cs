@@ -72,7 +72,7 @@ namespace Dropbox.Api
             var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
             if (!string.IsNullOrEmpty(data_api))
             {
-                httpRequestOptions.RequestHeaders["Dropbox-API-Arg"] = data_api;
+                httpRequest.RequestHeaders["Dropbox-API-Arg"] = data_api;
             }
 
             httpRequest.TimeoutMs = TimeoutInMilliseconds;

@@ -24,7 +24,7 @@ namespace Dropbox.Api
             var url = "/files/upload_session/start";
             string data_api = "{\"close\": false}";
 
-            await PostRequest_v2<ChunkedUpload_Start_Result>(url, accessToken, data_api, content, cancellationToken);
+            return await PostRequest_v2<ChunkedUpload_Start_Result>(url, accessToken, data_api, content, cancellationToken);
         }
 
         public async Task ChunkedUpload_Append(string session_id, byte[] content, int offset, string accessToken, CancellationToken cancellationToken)
@@ -41,7 +41,7 @@ namespace Dropbox.Api
 
             string data_api = "{\"cursor\": {\"session_id\":\"" + session_id + "\",\"offset\":" + offset + "}, \"commit\", { \"path\":\"" + path + "\", \"mode\":\"overwrite\"}}";
 
-            await PostRequest_v2<object>(url, accessToken, data_api, null, cancellationToken);
+            var result = await PostRequest_v2<object>(url, accessToken, data_api, null, cancellationToken);
         }
 
         public async Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken)
