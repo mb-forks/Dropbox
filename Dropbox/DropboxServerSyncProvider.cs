@@ -176,7 +176,8 @@ namespace Dropbox
                 buffer = await FillBuffer(stream, cancellationToken);
             }
 
-            await _dropboxContentApi.ChunkedUpload_Commit(path, uploadId, offset, accessToken, cancellationToken);
+            if (offset > 0)
+                await _dropboxContentApi.ChunkedUpload_Commit(path, uploadId, offset, accessToken, cancellationToken);
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
