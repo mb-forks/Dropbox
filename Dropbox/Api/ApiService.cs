@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Logging;
 
 namespace Dropbox.Api
 {
@@ -67,18 +68,36 @@ namespace Dropbox.Api
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 
-        protected async Task<T> PostRequest_v2<T>(string url, string accessToken, string data_api, byte[] content, CancellationToken cancellationToken)
+        protected async Task<T> PostRequest_v2<T>(string url, string accessToken, string data_api, string content, byte[] content_byte, CancellationToken cancellationToken, ILogger logger)
         {
             var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
             if (!string.IsNullOrEmpty(data_api))
             {
                 httpRequest.RequestHeaders["Dropbox-API-Arg"] = data_api;
+                logger.Debug("Dropbox-API-Arg: " + data_api);
             }
 
             httpRequest.TimeoutMs = TimeoutInMilliseconds;
-            httpRequest.RequestContentType = "text/plain";
-            if (content != null && content.Length > 0) httpRequest.RequestContentBytes = content;
+            httpRequest.RequestContentType = "application/json";
+
+            if (!string.IsNullOrEmpty(content))
+            {
+                httpRequest.RequestContent = content;
+                logger.Debug("Content: " + content);
+            }
+            else
+            {
+                if (content_byte != null && content_byte.Length > 0)
+                {
+                    httpRequest.RequestContentType = "application/octet-stream";
+                    httpRequest.RequestContentBytes = content_byte;
+                    logger.Debug("Content: Binary (" + content_byte.Length.ToString() + ") bytes");
+                }
+            }
+
+            logger.Debug("Send httpRequest");
             var result = await _httpClient.Post(httpRequest);
+            logger.Debug("Result: " + result.ToString());
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 

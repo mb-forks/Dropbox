@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Logging;
 
 namespace Dropbox.Api
 {
@@ -15,7 +16,7 @@ namespace Dropbox.Api
 
         protected override string BaseUrl
         {
-            get { return "https://api.dropboxapi.com/2/"; }
+            get { return "https://api.dropboxapi.com/"; }
         }
 
         public async Task<AuthorizationToken> AcquireToken(string code, string appKey, string appSecret, CancellationToken cancellationToken)
@@ -31,46 +32,42 @@ namespace Dropbox.Api
             return await PostRequest<AuthorizationToken>("/oauth2/token", null, data, cancellationToken);
         }
 
-        public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken)
+        public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/files/get_metadata";
-            var data = new Dictionary<string, string>();
-            data["path"] = path;
-            data["include_deleted"] = "false";
-
-            return await PostRequest<MetadataResult>(url, accessToken, data, cancellationToken);
+            var url = "/2/files/get_metadata";
+            string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
+            
+            return await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task Delete(string path, string accessToken, CancellationToken cancellationToken)
+        public async Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var data = new Dictionary<string, string>();
-            data["path"] = path;
+            var url = "/2/file/delete_v2";
+            string data = "{\"path\":\"" + path + "\"}";
 
-            await PostRequest<object>("/file/delete_v2", accessToken, data, cancellationToken);
+            await PostRequest_v2<object>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken)
+        public async Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/files/get_temporary_link";
+            var url = "/2/files/get_temporary_link";
+            string data = "{\"path\":\"" + path + "\"}";
 
-            var data = new Dictionary<string,string>();
-            data["path"] = path;
-
-            return await PostRequest<MediaResult>(url, accessToken, data, cancellationToken);
+            return await PostRequest_v2<MediaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken)
+        public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var data = new Dictionary<string, string>();
-            string url = "/files/list_folder";
+            string data = "";
+            string url = "/2/files/list_folder";
 
             if (!string.IsNullOrEmpty(cursor))
             {
-                data["cursor"] = cursor;
-                url = "/files/list_folder/continue";
+                data = "{\"cursor\":\"" + cursor + "\"}";
+                url = "/2/files/list_folder/continue";
             }
 
-            return await PostRequest<DeltaResult>(url, accessToken, data, cancellationToken);
+            return await PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
     }
 }

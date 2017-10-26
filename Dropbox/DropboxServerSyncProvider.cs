@@ -101,7 +101,7 @@ namespace Dropbox
             try
             {
                 var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
-                await _dropboxApi.Delete(id, syncAccount.AccessToken, cancellationToken);
+                await _dropboxApi.Delete(id, syncAccount.AccessToken, cancellationToken, _logger);
             }
             catch (HttpException ex)
             {
@@ -119,7 +119,7 @@ namespace Dropbox
             try
             {
                 var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
-                return _dropboxContentApi.Files(id, syncAccount.AccessToken, cancellationToken);
+                return _dropboxContentApi.Files(id, syncAccount.AccessToken, cancellationToken, _logger);
             }
             catch (HttpException ex)
             {
@@ -163,7 +163,7 @@ namespace Dropbox
 
             if (buffer.Count > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken);
+                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken, _logger);
                 session_id = result.session_id;
                 offset += buffer.Count;
                 buffer = await FillBuffer(stream, cancellationToken);
@@ -171,13 +171,13 @@ namespace Dropbox
 
             while (buffer.Count > 0)
             {
-                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken);
+                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken, _logger);
                 offset += buffer.Count;
                 buffer = await FillBuffer(stream, cancellationToken);
             }
 
             if (offset > 0)
-                await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken);
+                await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken, _logger);
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
@@ -196,7 +196,7 @@ namespace Dropbox
         {
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
 
-            var shareResult = await _dropboxApi.Media(id, syncAccount.AccessToken, cancellationToken);
+            var shareResult = await _dropboxApi.Media(id, syncAccount.AccessToken, cancellationToken, _logger);
 
             return new SyncedFileInfo
             {
@@ -218,8 +218,7 @@ namespace Dropbox
 
         private async Task<QueryResult<FileSystemMetadata>> FindFileMetadata(string path, string accessToken, CancellationToken cancellationToken)
         {
-            var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken);
-
+            var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken, _logger);
             return new QueryResult<FileSystemMetadata>
             {
                 Items = new[] { CreateFileMetadata(metadata) },
@@ -234,7 +233,7 @@ namespace Dropbox
 
             while (deltaResult.has_more)
             {
-                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken);
+                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken,_logger);
 
                 var newFiles = deltaResult.entries
                     .Select(deltaEntry => deltaEntry.Metadata)
