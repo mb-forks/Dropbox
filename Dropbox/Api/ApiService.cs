@@ -56,6 +56,7 @@ namespace Dropbox.Api
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 
+
         protected async Task<T> PutRequest<T>(string url, string accessToken, byte[] content, CancellationToken cancellationToken)
         {
             var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
@@ -63,6 +64,21 @@ namespace Dropbox.Api
             httpRequest.RequestContentType = "text/plain";
             httpRequest.RequestContentBytes = content;
             var result = await _httpClient.SendAsync(httpRequest, "PUT");
+            return _jsonSerializer.DeserializeFromStream<T>(result.Content);
+        }
+
+        protected async Task<T> PostRequest_v2<T>(string url, string accessToken, string data_api, byte[] content, CancellationToken cancellationToken)
+        {
+            var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
+            if (!string.IsNullOrEmpty(data_api))
+            {
+                httpRequestOptions.RequestHeaders["Dropbox-API-Arg"] = data_api;
+            }
+
+            httpRequest.TimeoutMs = TimeoutInMilliseconds;
+            httpRequest.RequestContentType = "text/plain";
+            if (content != null && content.Length > 0) httpRequest.RequestContentBytes = content;
+            var result = await _httpClient.Post(httpRequest);
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 

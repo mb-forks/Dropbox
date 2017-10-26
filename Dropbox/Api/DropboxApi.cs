@@ -15,7 +15,7 @@ namespace Dropbox.Api
 
         protected override string BaseUrl
         {
-            get { return "https://api.dropbox.com/1/"; }
+            get { return "https://api.dropboxapi.com/2/"; }
         }
 
         public async Task<AuthorizationToken> AcquireToken(string code, string appKey, string appSecret, CancellationToken cancellationToken)
@@ -33,26 +33,28 @@ namespace Dropbox.Api
 
         public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken)
         {
-            var url = string.Format("/metadata/auto{0}?file_limit=25000&include_deleted=false", path);
+            var url = "/files/get_metadata";
+            var data = new Dictionary<string, string>();
+            data["path"] = path;
+            data["include_deleted"] = false;
 
-            return await GetRequest<MetadataResult>(url, accessToken, cancellationToken);
+            return await PostRequest<MetadataResult>(url, accessToken, cancellationToken);
         }
 
         public async Task Delete(string path, string accessToken, CancellationToken cancellationToken)
         {
-            var data = new Dictionary<string, string>
-            {
-                { "root", "auto" },
-                { "path", path }
-            };
+            var data = new Dictionary<string, string>();
+            data["path"] = path;
 
-            await PostRequest<object>("/fileops/delete", accessToken, data, cancellationToken);
+            await PostRequest<object>("/file/delete_v2", accessToken, data, cancellationToken);
         }
 
         public async Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken)
         {
-            var url = "/media/auto" + path;
+            var url = "/files/get_temporary_link";
+
             var data = new Dictionary<string,string>();
+            data["path"] = path;
 
             return await PostRequest<MediaResult>(url, accessToken, data, cancellationToken);
         }

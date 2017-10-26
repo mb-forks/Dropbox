@@ -157,19 +157,27 @@ namespace Dropbox
 
         private async Task UploadFile(string path, Stream stream, string accessToken, CancellationToken cancellationToken)
         {
-            string uploadId = null;
+            string session_id = null;
             var offset = 0;
             var buffer = await FillBuffer(stream, cancellationToken);
 
-            while (buffer.Count > 0)
+            if (buffer.Count > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload(uploadId, buffer.Array, offset, accessToken, cancellationToken);
-                uploadId = result.upload_id;
-                offset = result.offset;
+                var result = await _dropboxContentApi.ChunkedUpload_Start(session_id, buffer.Array, accessToken, cancellationToken);
+                session_id = result.session_id;
                 buffer = await FillBuffer(stream, cancellationToken);
             }
 
-            await _dropboxContentApi.CommitChunkedUpload(path, uploadId, accessToken, cancellationToken);
+            //offset!!!
+
+            while (buffer.Count > 0)
+            {
+                var result = await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken);
+                //offset!!!
+                buffer = await FillBuffer(stream, cancellationToken);
+            }
+
+            await _dropboxContentApi.ChunkedUpload_Commit(path, uploadId, offset, accessToken, cancellationToken);
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
@@ -247,10 +255,10 @@ namespace Dropbox
         {
             return new FileSystemMetadata
             {
-                FullName = metadata.path,
-                IsDirectory = metadata.is_dir,
+                FullName = metadata.path_display,
+                IsDirectory = ((metadata.tag == "folder")? true : false),
                 //MimeType = metadata.mime_type,
-                Name = metadata.path.Split('/').Last()
+                Name = metadata.path_display.Split('/').Last()
             };
         }
     }

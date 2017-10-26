@@ -4,8 +4,7 @@ namespace Dropbox.Api
 {
     public class MetadataResult
     {
-        public string path { get; set; }
-        public bool is_dir { get; set; }
-        public string mime_type { get; set; }
+        public string path_display { get; set; }
+        public string tag { get; set; }
     }
 }
