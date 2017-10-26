@@ -62,13 +62,15 @@ namespace Dropbox.Api
         public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken)
         {
             var data = new Dictionary<string, string>();
+            string url = "/files/list_folder";
 
             if (!string.IsNullOrEmpty(cursor))
             {
                 data["cursor"] = cursor;
+                url = "/files/list_folder/continue";
             }
 
-            return await PostRequest<DeltaResult>("/delta", accessToken, data, cancellationToken);
+            return await PostRequest<DeltaResult>(url, accessToken, data, cancellationToken);
         }
     }
 }

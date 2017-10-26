@@ -15,18 +15,20 @@ namespace Dropbox.Api
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             JArray jarray = JArray.Load(reader);
-            var item1 = jarray[0].ToString();
-            var item2 = jarray[1].ToObject<MetadataResult>();
+            var item1 = jarray[0].ToObject<MetadataResult>();
+            var item2 = jarray[1].ToString();
+            var item3 = jarray[2].ToString();
+            var item4 = jarray[3].ToString();
 
-            return new List<Tuple<string, MetadataResult>>
+            return new List<Tuple<MetadataResult, string, string, string>>
             {
-                new Tuple<string, MetadataResult>(item1, item2)
+                new Tuple<MetadataResult,string,string,string>(item1, item2, item3, item4)
             };
         }
 
         public override bool CanConvert(Type objectType)
         {
-            return typeof(List<Tuple<string, MetadataResult>>).IsAssignableFrom(objectType);
+            return typeof(List<Tuple<MetadataResult, string, string, string>>).IsAssignableFrom(objectType);
         }
     }
 }
