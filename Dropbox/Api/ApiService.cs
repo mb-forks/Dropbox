@@ -36,35 +36,11 @@ namespace Dropbox.Api
             _applicationHost = applicationHost;
         }
 
-        protected async Task<T> GetRequest<T>(string url, string accessToken, CancellationToken cancellationToken)
-        {
-            var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
-            var resultStream = await _httpClient.Get(httpRequest);
-            return _jsonSerializer.DeserializeFromStream<T>(resultStream);
-        }
-
-        protected async Task<Stream> GetRawRequest(string url, string accessToken, CancellationToken cancellationToken)
-        {
-            var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
-            return await _httpClient.Get(httpRequest);
-        }
-
         protected async Task<T> PostRequest<T>(string url, string accessToken, IDictionary<string, string> data, CancellationToken cancellationToken)
         {
             var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
             httpRequest.SetPostData(data);
             var result = await _httpClient.Post(httpRequest);
-            return _jsonSerializer.DeserializeFromStream<T>(result.Content);
-        }
-
-
-        protected async Task<T> PutRequest<T>(string url, string accessToken, byte[] content, CancellationToken cancellationToken)
-        {
-            var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
-            httpRequest.TimeoutMs = TimeoutInMilliseconds;
-            httpRequest.RequestContentType = "text/plain";
-            httpRequest.RequestContentBytes = content;
-            var result = await _httpClient.SendAsync(httpRequest, "PUT");
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 
