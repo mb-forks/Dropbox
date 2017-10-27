@@ -36,8 +36,9 @@ namespace Dropbox.Api
         {
             var url = "/2/files/get_metadata";
             string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
-            
-            return await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
+
+            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            return result;
         }
 
         public async Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)

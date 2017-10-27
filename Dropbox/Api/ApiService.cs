@@ -82,8 +82,15 @@ namespace Dropbox.Api
 
             if (!string.IsNullOrEmpty(content))
             {
-                httpRequest.RequestContent = content;
-                logger.Debug("Content: " + content);
+                if (content != "_download")
+                {
+                    httpRequest.RequestContent = content;
+                    logger.Debug("Content: " + content);
+                }
+                else
+                {
+                    httpRequest.RequestContentType = "application/octet-stream";
+                }
             }
             else
             {
@@ -97,7 +104,8 @@ namespace Dropbox.Api
 
             logger.Debug("Send httpRequest");
             var result = await _httpClient.Post(httpRequest);
-            logger.Debug("Result: " + result.ToString());
+            logger.Debug("Received HttpResponseInfo");
+
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 

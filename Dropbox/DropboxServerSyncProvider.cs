@@ -218,12 +218,35 @@ namespace Dropbox
 
         private async Task<QueryResult<FileSystemMetadata>> FindFileMetadata(string path, string accessToken, CancellationToken cancellationToken)
         {
-            var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken, _logger);
-            return new QueryResult<FileSystemMetadata>
+            try
             {
-                Items = new[] { CreateFileMetadata(metadata) },
-                TotalRecordCount = 1
-            };
+                var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken, _logger);
+                return new QueryResult<FileSystemMetadata>
+                {
+                    Items = new[] { CreateFileMetadata(metadata) },
+                    TotalRecordCount = 1
+                };
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.Conflict)
+                {
+                    _logger.Debug("No Data, maybe a 409");
+                    return new QueryResult<FileSystemMetadata>
+                    {
+                        Items = new[] { new FileSystemMetadata
+                                {
+                                    FullName = "",
+                                    IsDirectory = false,
+                                    Name = ""
+                                }
+                            },
+                        TotalRecordCount = 0
+                    };
+                }
+
+                throw;
+            }
         }
 
         private async Task<QueryResult<FileSystemMetadata>> FindFilesMetadata(string accessToken, CancellationToken cancellationToken)
