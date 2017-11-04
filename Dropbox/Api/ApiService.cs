@@ -85,6 +85,19 @@ namespace Dropbox.Api
             return _jsonSerializer.DeserializeFromStream<T>(result.Content);
         }
 
+        protected async Task<Stream> GetRawRequest(string url, string accessToken, string data_api, CancellationToken cancellationToken, ILogger logger)
+        {
+            var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
+            if (!string.IsNullOrEmpty(data_api))
+            {
+                httpRequest.RequestHeaders["Dropbox-API-Arg"] = data_api;
+                logger.Debug("Dropbox-API-Arg: " + data_api);
+            }
+
+            logger.Debug("Send httpRequest");
+            return await _httpClient.Get(httpRequest);
+        }
+
         private HttpRequestOptions PrepareHttpRequestOptions(string url, string accessToken, CancellationToken cancellationToken)
         {
             var httpRequestOptions = new HttpRequestOptions

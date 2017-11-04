@@ -43,7 +43,7 @@ namespace Dropbox.Api
 
         public async Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/file/delete_v2";
+            var url = "/2/files/delete_v2";
             string data = "{\"path\":\"" + path + "\"}";
 
             await PostRequest_v2<object>(url, accessToken, null, data, null, cancellationToken, logger);
@@ -59,7 +59,7 @@ namespace Dropbox.Api
 
         public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            string data = "";
+            string data = "{\"path\":\"\", \"recursive\": true}";
             string url = "/2/files/list_folder";
 
             if (!string.IsNullOrEmpty(cursor))

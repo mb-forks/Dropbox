@@ -6,6 +6,10 @@
     <FileVersion>3.1.1.1</FileVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <OutputPath>C:\Users\random.events\source\repos\Emby.Server.NetCore\src\EmbyServer\programdata\plugins\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
   </ItemGroup>

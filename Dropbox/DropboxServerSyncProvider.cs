@@ -232,17 +232,7 @@ namespace Dropbox
                 if (ex.StatusCode == HttpStatusCode.Conflict)
                 {
                     _logger.Debug("No Data, maybe a 409");
-                    return new QueryResult<FileSystemMetadata>
-                    {
-                        Items = new[] { new FileSystemMetadata
-                                {
-                                    FullName = "",
-                                    IsDirectory = false,
-                                    Name = ""
-                                }
-                            },
-                        TotalRecordCount = 0
-                    };
+                    return new QueryResult<FileSystemMetadata>();
                 }
 
                 throw;
