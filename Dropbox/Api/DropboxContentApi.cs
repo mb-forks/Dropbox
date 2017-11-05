@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Model.Logging;
 
 namespace Dropbox.Api
 {
@@ -16,38 +17,40 @@ namespace Dropbox.Api
 
         protected override string BaseUrl
         {
-            get { return "https://api-content.dropbox.com/1/"; }
+            get { return "https://content.dropboxapi.com/"; }
         }
 
-        public async Task<ChunkedUploadResult> ChunkedUpload(string uploadId, byte[] content, int offset, string accessToken, CancellationToken cancellationToken)
+        public async Task<ChunkedUpload_Start_Result> ChunkedUpload_Start(byte[] content, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/chunked_upload?offset=" + offset;
+            var url = "/2/files/upload_session/start";
+            string data_api = "{\"close\": false}";
 
-            if (!string.IsNullOrEmpty(uploadId))
-            {
-                url += "&upload_id=" + uploadId;
-            }
-
-            return await PutRequest<ChunkedUploadResult>(url, accessToken, content, cancellationToken);
+            return await PostRequest_v2<ChunkedUpload_Start_Result>(url, accessToken, data_api, null, content, cancellationToken, logger);
         }
 
-        public async Task CommitChunkedUpload(string path, string uploadId, string accessToken, CancellationToken cancellationToken)
+        public async Task ChunkedUpload_Append(string session_id, byte[] content, int offset, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/commit_chunked_upload/auto" + path;
-            var data = new Dictionary<string, string>
-            {
-                { "overwrite", "true" },
-                { "upload_id", uploadId }
-            };
+            var url = "/2/files/upload_session/append_v2";
+            string data_api = "{\"cursor\": {\"session_id\": \"" + session_id + "\",\"offset\":" + offset + "},\"close\": false}";
 
-            await PostRequest<object>(url, accessToken, data, cancellationToken);
+            await PostRequest_v2<object>(url, accessToken, data_api, null, content, cancellationToken, logger);
         }
 
-        public async Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken)
+        public async Task ChunkedUpload_Commit(string path, string session_id, int offset, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/files/auto" + path;
+            var url = "/2/files/upload_session/finish";
 
-            return await GetRawRequest(url, accessToken, cancellationToken);
+            string data_api = "{\"cursor\": {\"session_id\":\"" + session_id + "\",\"offset\":" + offset + "}, \"commit\": { \"path\":\"" + path + "\", \"mode\":\"overwrite\"}}";
+
+            var result = await PostRequest_v2<object>(url, accessToken, data_api, "_download", null, cancellationToken, logger);
+        }
+
+        public async Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        {
+            var url = "/2/files/download";
+            string data_api = "{\"path\":\"" + path + "\"}";
+
+            return await GetRawRequest(url, accessToken, data_api, cancellationToken, logger);
         }
     }
 }

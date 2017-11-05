@@ -1,8 +1,7 @@
 ﻿namespace Dropbox.Api
 {
-    public class ChunkedUploadResult
+    public class ChunkedUpload_Start_Result
     {
-        public string upload_id { get; set; }
-        public int offset { get; set; }
+        public string session_id { get; set; }
     }
 }

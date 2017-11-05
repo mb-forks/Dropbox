@@ -45,7 +45,7 @@
                             <div><b>1.</b> <a href="https://www.dropbox.com/developers/apps" target="_blank">Open Dropbox.</a></div>
                             <div><b>2.</b> Click "Create app".</div>
                             <div><b>3.</b> For the type of app, select "Dropbox API app".</div>
-                            <div><b>4.</b> For the app access, select "Yes - My app only needs access to files it creates."</div>
+                            <div><b>4.</b> For the app access, select "App folder – Access to a single folder created specifically for your app."</div>
                             <div><b>5.</b> For the app name, enter anything.</div>
                             <div><b>6.</b> Click "Create app".</div>
                             <div><b>7.</b> You'll be returned to the project screen, where your App Key and App Secret will be displayed. Copy these values.</div>
@@ -258,7 +258,7 @@
                         saveAccount(page);
                     } else {
                         var clientId = $('#dropboxAppKey', page).val();
-                        var url = 'https://www.dropbox.com/1/oauth2/authorize?response_type=code&force_reapprove=true&client_id=' + clientId;
+                        var url = 'https://www.dropbox.com/oauth2/authorize?response_type=code&force_reapprove=true&client_id=' + clientId;
 
                         window.open(url, '_blank');
 

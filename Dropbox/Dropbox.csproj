@@ -2,8 +2,12 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net46;</TargetFrameworks>
-    <AssemblyVersion>3.1.1.0</AssemblyVersion>
-    <FileVersion>3.1.1.0</FileVersion>
+    <AssemblyVersion>3.1.1.1</AssemblyVersion>
+    <FileVersion>3.1.1.1</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <OutputPath>C:\Users\random.events\source\repos\Emby.Server.NetCore\src\EmbyServer\programdata\plugins\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
