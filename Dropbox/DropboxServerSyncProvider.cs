@@ -22,16 +22,32 @@ namespace Dropbox
         // 10mb
         private const int StreamBufferSize = 10 * 1024 * 1024;
 
-        private readonly IConfigurationRetriever _configurationRetriever;
-        private readonly IDropboxApi _dropboxApi;
-        private readonly IDropboxContentApi _dropboxContentApi;
+        private IConfigurationRetriever _configurationRetriever
+        {
+            get
+            {
+                return Plugin.Instance.ConfigurationRetriever;
+            }
+        }
+
+        private IDropboxApi _dropboxApi
+        {
+            get
+            {
+                return Plugin.Instance.DropboxApi;
+            }
+        }
+        private IDropboxContentApi _dropboxContentApi
+        {
+            get
+            {
+                return Plugin.Instance.DropboxContentApi;
+            }
+        }
         private readonly ILogger _logger;
 
-        public DropboxServerSyncProvider(IConfigurationRetriever configurationRetriever, IDropboxApi dropboxApi, IDropboxContentApi dropboxContentApi, ILogManager logManager)
+        public DropboxServerSyncProvider(ILogManager logManager)
         {
-            _configurationRetriever = configurationRetriever;
-            _dropboxApi = dropboxApi;
-            _dropboxContentApi = dropboxContentApi;
             _logger = logManager.GetLogger("Dropbox");
         }
 
@@ -246,7 +262,7 @@ namespace Dropbox
 
             while (deltaResult.has_more)
             {
-                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken,_logger);
+                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken, _logger);
 
                 var newFiles = deltaResult.entries
                     .Select(deltaEntry => deltaEntry.Metadata)
@@ -268,7 +284,7 @@ namespace Dropbox
             return new FileSystemMetadata
             {
                 FullName = metadata.path_display,
-                IsDirectory = ((metadata.tag == "folder")? true : false),
+                IsDirectory = ((metadata.tag == "folder") ? true : false),
                 //MimeType = metadata.mime_type,
                 Name = metadata.path_display.Split('/').Last()
             };

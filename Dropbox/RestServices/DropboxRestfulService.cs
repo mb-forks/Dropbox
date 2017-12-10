@@ -12,13 +12,20 @@ namespace Dropbox.RestServices
     [Authenticated]
     public class DropboxRestfulService : IService
     {
-        private readonly IConfigurationRetriever _configurationRetriever;
-        private readonly IDropboxApi _dropboxApi;
-
-        public DropboxRestfulService(IConfigurationRetriever configurationRetriever, IDropboxApi dropboxApi)
+        private IConfigurationRetriever _configurationRetriever
         {
-            _configurationRetriever = configurationRetriever;
-            _dropboxApi = dropboxApi;
+            get
+            {
+                return Plugin.Instance.ConfigurationRetriever;
+            }
+        }
+
+        private IDropboxApi _dropboxApi
+        {
+            get
+            {
+                return Plugin.Instance.DropboxApi;
+            }
         }
 
         public void Delete(DeleteSyncTarget request)
