@@ -148,10 +148,10 @@ namespace Dropbox
             }
         }
 
-        public Task<QueryResult<FileSystemMetadata>> GetFiles(string[] pathParts, SyncTarget target, CancellationToken cancellationToken)
+        public Task<QueryResult<FileSystemMetadata>> GetFiles(string[] directoryPathParts, SyncTarget target, CancellationToken cancellationToken)
         {
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
-            var path = FindPathFromFileQuery(pathParts, target);
+            var path = FindPathFromFileQuery(directoryPathParts, target);
 
             return FindFileMetadata(path, syncAccount.AccessToken, cancellationToken);
         }
