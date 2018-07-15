@@ -71,14 +71,14 @@ namespace Dropbox
             return _configurationRetriever.GetUserSyncAccounts(userId).Select(CreateSyncTarget).ToList();
         }
 
-        public async Task<SyncedFileInfo> SendFile(Stream stream, string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
+        public async Task<SyncedFileInfo> SendFile(SyncJob syncJob, string originalMediaPath, Stream inputStream, bool isMedia, string[] outputPathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var path = GetFullPath(pathParts, target);
+            var path = GetFullPath(outputPathParts, target);
             _logger.Debug("Sending file {0} to {1}", path, target.Name);
 
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
 
-            await UploadFile(path, stream, syncAccount.AccessToken, cancellationToken);
+            await UploadFile(path, inputStream, syncAccount.AccessToken, cancellationToken);
 
             return new SyncedFileInfo
             {
