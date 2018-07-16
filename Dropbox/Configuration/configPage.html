@@ -35,7 +35,7 @@
                     <div class="dropboxSyncTargets"></div>
                 </div>
 
-                <div data-role="popup" id="popupAuthInfo" class="popup" data-position-to="window">
+                <div data-role="popup" id="popupAuthInfo" class="dialog dialog-fixedSize dialog-small hi" style="position: fixed; top: 10%;">
                     <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
                         <h3 class="popupHeader">Instructions</h3>
                     </div>
@@ -55,7 +55,7 @@
                         </div>
 
                         <div>
-                            <button type="button" data-icon="delete" onclick="$(this).parents('#popupAddFolder').popup('close');">Close</button>
+                            <button type="button" data-icon="delete" onclick="$(this).parents('#popupAuthInfo').popup('close');">Close</button>
                         </div>
                     </div>
                 </div>
