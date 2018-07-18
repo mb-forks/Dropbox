@@ -11,5 +11,6 @@ namespace Dropbox.Api
         Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
         Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
         Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger);
+        Task<DeltaResult> FilesInFolder(string folderPath, string accessToken, CancellationToken cancellationToken, ILogger logger);
     }
 }

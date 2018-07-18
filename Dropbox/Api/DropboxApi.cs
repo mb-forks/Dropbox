@@ -57,6 +57,14 @@ namespace Dropbox.Api
             return await PostRequest_v2<MediaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
+        public async Task<DeltaResult> FilesInFolder(string folderPath, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        {
+            string data = "{\"path\":\"" + folderPath + "\", \"recursive\": true}";
+            string url = "/2/files/list_folder";
+
+            return await PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
+        }
+
         public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
             string data = "{\"path\":\"\", \"recursive\": true}";
