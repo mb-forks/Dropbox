@@ -153,7 +153,7 @@ namespace Dropbox
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
             var path = FindPathFromFileQuery(directoryPathParts, target);
 
-            return FindFileMetadata(path, syncAccount.AccessToken, cancellationToken);
+            return FilesInFolder(path, syncAccount.AccessToken, cancellationToken);
         }
 
         public Task<QueryResult<FileSystemMetadata>> GetFiles(SyncTarget target, CancellationToken cancellationToken)
@@ -232,28 +232,28 @@ namespace Dropbox
             return string.Empty;
         }
 
-        private async Task<QueryResult<FileSystemMetadata>> FindFileMetadata(string path, string accessToken, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken, _logger);
-                return new QueryResult<FileSystemMetadata>
-                {
-                    Items = new[] { CreateFileMetadata(metadata) },
-                    TotalRecordCount = 1
-                };
-            }
-            catch (HttpException ex)
-            {
-                if (ex.StatusCode == HttpStatusCode.Conflict)
-                {
-                    _logger.Debug("No Data, maybe a 409");
-                    return new QueryResult<FileSystemMetadata>();
-                }
+        ////private async Task<QueryResult<FileSystemMetadata>> FindFileMetadata(string path, string accessToken, CancellationToken cancellationToken)
+        ////{
+        ////    try
+        ////    {
+        ////        var metadata = await _dropboxApi.Metadata(path, accessToken, cancellationToken, _logger);
+        ////        return new QueryResult<FileSystemMetadata>
+        ////        {
+        ////            Items = new[] { CreateFileMetadata(metadata) },
+        ////            TotalRecordCount = 1
+        ////        };
+        ////    }
+        ////    catch (HttpException ex)
+        ////    {
+        ////        if (ex.StatusCode == HttpStatusCode.Conflict)
+        ////        {
+        ////            _logger.Debug("No Data, maybe a 409");
+        ////            return new QueryResult<FileSystemMetadata>();
+        ////        }
 
-                throw;
-            }
-        }
+        ////        throw;
+        ////    }
+        ////}
 
         private async Task<QueryResult<FileSystemMetadata>> FindFilesMetadata(string accessToken, CancellationToken cancellationToken)
         {
@@ -279,12 +279,37 @@ namespace Dropbox
             };
         }
 
+        private async Task<QueryResult<FileSystemMetadata>> FilesInFolder(string folder, string accessToken, CancellationToken cancellationToken)
+        {
+            var files = new List<FileSystemMetadata>();
+            var deltaResult = new DeltaResult { has_more = true };
+
+            while (deltaResult.has_more)
+            {
+                deltaResult = await _dropboxApi.FilesInFolder(folder, accessToken, cancellationToken, _logger);
+
+                var newFiles = deltaResult.entries
+                    .Select(deltaEntry => deltaEntry.Metadata)
+                    .Where(metadata => metadata != null)
+                    .Select(CreateFileMetadata)
+                    .Where(fsi => !fsi.IsDirectory);
+
+                files.AddRange(newFiles);
+            }
+
+            return new QueryResult<FileSystemMetadata>
+            {
+                Items = files.ToArray(),
+                TotalRecordCount = files.Count
+            };
+        }
+
         private static FileSystemMetadata CreateFileMetadata(MetadataResult metadata)
         {
             return new FileSystemMetadata
             {
                 FullName = metadata.path_display,
-                IsDirectory = ((metadata.tag == "folder") ? true : false),
+                IsDirectory = (metadata.tag == "folder"),
                 //MimeType = metadata.mime_type,
                 Name = metadata.path_display.Split('/').Last()
             };
