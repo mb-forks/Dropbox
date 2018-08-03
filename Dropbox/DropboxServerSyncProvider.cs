@@ -80,7 +80,7 @@ namespace Dropbox
 
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
 
-            await UploadFile(path, inputStream, syncAccount.AccessToken, cancellationToken).ConfigureAwait(false);
+            await UploadFile(path, inputStream, progress, syncAccount.AccessToken, cancellationToken).ConfigureAwait(false);
 
             return new SyncedFileInfo
             {
@@ -124,7 +124,7 @@ namespace Dropbox
             }
             catch (HttpException ex)
             {
-                 _logger.ErrorException("FolderSync: Error removing {0} from {1}.", ex, path, target.Name);
+                _logger.ErrorException("FolderSync: Error removing {0} from {1}.", ex, path, target.Name);
                 return false;
             }
         }
@@ -170,9 +170,12 @@ namespace Dropbox
             };
         }
 
-        private async Task UploadFile(string path, Stream stream, string accessToken, CancellationToken cancellationToken)
+        private async Task UploadFile(string path, Stream stream, IProgress<double> progress, string accessToken, CancellationToken cancellationToken)
         {
+            progress.Report(0.0);
+
             string session_id = null;
+            var streamLength = stream.Length;
             var offset = 0;
             var buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
 
@@ -181,6 +184,7 @@ namespace Dropbox
                 var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken, _logger).ConfigureAwait(false);
                 session_id = result.session_id;
                 offset += buffer.Count;
+                progress.Report((double)offset / streamLength * 100);
                 buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
@@ -188,11 +192,14 @@ namespace Dropbox
             {
                 await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
                 offset += buffer.Count;
+                progress.Report((double)offset / streamLength * 100);
                 buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
             if (offset > 0)
+            {
                 await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
+            }
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
