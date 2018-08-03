@@ -112,21 +112,18 @@ namespace Dropbox
             }
         }
 
-        public async Task DeleteFile(string id, SyncTarget target, CancellationToken cancellationToken)
+        public async Task<bool> DeleteFile(SyncJob syncJob, string path, SyncTarget target, CancellationToken cancellationToken)
         {
             try
             {
                 var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
-                await _dropboxApi.Delete(id, syncAccount.AccessToken, cancellationToken, _logger);
+                await _dropboxApi.Delete(path, syncAccount.AccessToken, cancellationToken, _logger);
+                return true;
             }
             catch (HttpException ex)
             {
-                if (ex.StatusCode == HttpStatusCode.NotFound)
-                {
-                    throw new FileNotFoundException("File not found", ex);
-                }
-
-                throw;
+                 _logger.ErrorException("FolderSync: Error removing {0} from {1}.", ex, path, target.Name);
+                return false;
             }
         }
 
