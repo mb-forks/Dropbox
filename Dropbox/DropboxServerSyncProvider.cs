@@ -37,6 +37,7 @@ namespace Dropbox
                 return Plugin.Instance.DropboxApi;
             }
         }
+
         private IDropboxContentApi _dropboxContentApi
         {
             get
@@ -44,6 +45,7 @@ namespace Dropbox
                 return Plugin.Instance.DropboxContentApi;
             }
         }
+
         private readonly ILogger _logger;
 
         public DropboxServerSyncProvider(ILogManager logManager)

@@ -34,7 +34,7 @@ namespace Dropbox.Api
 
         public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/get_metadata";
+            const string url = "/2/files/get_metadata";
             string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
 
             var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
@@ -43,7 +43,7 @@ namespace Dropbox.Api
 
         public Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/delete_v2";
+            const string url = "/2/files/delete_v2";
             string data = "{\"path\":\"" + path + "\"}";
 
             return PostRequest_v2<object>(url, accessToken, null, data, null, cancellationToken, logger);
@@ -51,7 +51,7 @@ namespace Dropbox.Api
 
         public Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/get_temporary_link";
+            const string url = "/2/files/get_temporary_link";
             string data = "{\"path\":\"" + path + "\"}";
 
             return PostRequest_v2<MediaResult>(url, accessToken, null, data, null, cancellationToken, logger);
@@ -60,7 +60,7 @@ namespace Dropbox.Api
         public Task<DeltaResult> FilesInFolder(string folderPath, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
             string data = "{\"path\":\"" + folderPath + "\", \"recursive\": true}";
-            string url = "/2/files/list_folder";
+            const string url = "/2/files/list_folder";
 
             return PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
