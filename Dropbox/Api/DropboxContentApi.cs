@@ -42,7 +42,7 @@ namespace Dropbox.Api
 
             string data_api = "{\"cursor\": {\"session_id\":\"" + session_id + "\",\"offset\":" + offset + "}, \"commit\": { \"path\":\"" + path + "\", \"mode\":\"overwrite\"}}";
 
-            var result = await PostRequest_v2<object>(url, accessToken, data_api, "_download", null, cancellationToken, logger);
+            var result = await PostRequest_v2<object>(url, accessToken, data_api, "_download", null, cancellationToken, logger).ConfigureAwait(false);
         }
 
         public Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)

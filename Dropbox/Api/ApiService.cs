@@ -40,8 +40,8 @@ namespace Dropbox.Api
         {
             var httpRequest = PrepareHttpRequestOptions(url, accessToken, cancellationToken);
             httpRequest.SetPostData(data);
-            var result = await _httpClient.Post(httpRequest);
-            return await _jsonSerializer.DeserializeFromStreamAsync<T>(result.Content);
+            var result = await _httpClient.Post(httpRequest).ConfigureAwait(false);
+            return await _jsonSerializer.DeserializeFromStreamAsync<T>(result.Content).ConfigureAwait(false);
         }
 
         protected async Task<T> PostRequest_v2<T>(string url, string accessToken, string data_api, string content, byte[] content_byte, CancellationToken cancellationToken, ILogger logger)
@@ -79,10 +79,10 @@ namespace Dropbox.Api
             }
 
             logger.Debug("Send httpRequest");
-            var result = await _httpClient.Post(httpRequest);
+            var result = await _httpClient.Post(httpRequest).ConfigureAwait(false);
             logger.Debug("Received HttpResponseInfo");
 
-            return await _jsonSerializer.DeserializeFromStreamAsync<T>(result.Content);
+            return await _jsonSerializer.DeserializeFromStreamAsync<T>(result.Content).ConfigureAwait(false);
         }
 
         protected Task<Stream> GetRawRequest(string url, string accessToken, string data_api, CancellationToken cancellationToken, ILogger logger)

@@ -37,7 +37,7 @@ namespace Dropbox.Api
             const string url = "/2/files/get_metadata";
             string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
 
-            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger).ConfigureAwait(false);
             return result;
         }
 
