@@ -6,6 +6,14 @@
     <FileVersion>3.2.0</FileVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <NoWarn>1701;1702;3021</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+    <NoWarn>1701;1702;3021</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
   </ItemGroup>
@@ -15,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mediabrowser.server.core" Version="3.5.0" />
+    <PackageReference Include="mediabrowser.server.core" Version="3.6.0.3-beta" />
   </ItemGroup>
 
 </Project>

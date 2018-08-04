@@ -20,37 +20,37 @@ namespace Dropbox.Api
             get { return "https://content.dropboxapi.com/"; }
         }
 
-        public async Task<ChunkedUpload_Start_Result> ChunkedUpload_Start(byte[] content, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task<ChunkedUpload_Start_Result> ChunkedUpload_Start(byte[] content, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/upload_session/start";
-            string data_api = "{\"close\": false}";
+            const string url = "/2/files/upload_session/start";
+            const string data_api = "{\"close\": false}";
 
-            return await PostRequest_v2<ChunkedUpload_Start_Result>(url, accessToken, data_api, null, content, cancellationToken, logger);
+            return PostRequest_v2<ChunkedUpload_Start_Result>(url, accessToken, data_api, null, content, cancellationToken, logger);
         }
 
-        public async Task ChunkedUpload_Append(string session_id, byte[] content, int offset, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task ChunkedUpload_Append(string session_id, byte[] content, int offset, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/upload_session/append_v2";
+            const string url = "/2/files/upload_session/append_v2";
             string data_api = "{\"cursor\": {\"session_id\": \"" + session_id + "\",\"offset\":" + offset + "},\"close\": false}";
 
-            await PostRequest_v2<object>(url, accessToken, data_api, null, content, cancellationToken, logger);
+            return PostRequest_v2<object>(url, accessToken, data_api, null, content, cancellationToken, logger);
         }
 
         public async Task ChunkedUpload_Commit(string path, string session_id, int offset, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/upload_session/finish";
+            const string url = "/2/files/upload_session/finish";
 
             string data_api = "{\"cursor\": {\"session_id\":\"" + session_id + "\",\"offset\":" + offset + "}, \"commit\": { \"path\":\"" + path + "\", \"mode\":\"overwrite\"}}";
 
-            var result = await PostRequest_v2<object>(url, accessToken, data_api, "_download", null, cancellationToken, logger);
+            var result = await PostRequest_v2<object>(url, accessToken, data_api, "_download", null, cancellationToken, logger).ConfigureAwait(false);
         }
 
-        public async Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task<Stream> Files(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/download";
+            const string url = "/2/files/download";
             string data_api = "{\"path\":\"" + path + "\"}";
 
-            return await GetRawRequest(url, accessToken, data_api, cancellationToken, logger);
+            return GetRawRequest(url, accessToken, data_api, cancellationToken, logger);
         }
     }
 }

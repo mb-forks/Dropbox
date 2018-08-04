@@ -35,7 +35,7 @@ namespace Dropbox.RestServices
 
         public async Task Post(AddSyncTarget request)
         {
-            var accessToken = await GetAccessToken(request.Code);
+            var accessToken = await GetAccessToken(request.Code).ConfigureAwait(false);
 
             var syncAccount = new DropboxSyncAccount
             {
@@ -62,7 +62,7 @@ namespace Dropbox.RestServices
         private async Task<string> GetAccessToken(string code)
         {
             var config = _configurationRetriever.GetGeneralConfiguration();
-            var token = await _dropboxApi.AcquireToken(code, config.DropboxAppKey, config.DropboxAppSecret, CancellationToken.None);
+            var token = await _dropboxApi.AcquireToken(code, config.DropboxAppKey, config.DropboxAppSecret, CancellationToken.None).ConfigureAwait(false);
             return token.access_token;
         }
     }

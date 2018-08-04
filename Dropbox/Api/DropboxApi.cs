@@ -19,7 +19,7 @@ namespace Dropbox.Api
             get { return "https://api.dropboxapi.com/"; }
         }
 
-        public async Task<AuthorizationToken> AcquireToken(string code, string appKey, string appSecret, CancellationToken cancellationToken)
+        public Task<AuthorizationToken> AcquireToken(string code, string appKey, string appSecret, CancellationToken cancellationToken)
         {
             var data = new Dictionary<string, string>
             {
@@ -29,43 +29,43 @@ namespace Dropbox.Api
                 { "client_secret", appSecret }
             };
 
-            return await PostRequest<AuthorizationToken>("/oauth2/token", null, data, cancellationToken);
+            return PostRequest<AuthorizationToken>("/oauth2/token", null, data, cancellationToken);
         }
 
         public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/get_metadata";
+            const string url = "/2/files/get_metadata";
             string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
 
-            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger).ConfigureAwait(false);
             return result;
         }
 
-        public async Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/delete_v2";
+            const string url = "/2/files/delete_v2";
             string data = "{\"path\":\"" + path + "\"}";
 
-            await PostRequest_v2<object>(url, accessToken, null, data, null, cancellationToken, logger);
+            return PostRequest_v2<object>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
-            var url = "/2/files/get_temporary_link";
+            const string url = "/2/files/get_temporary_link";
             string data = "{\"path\":\"" + path + "\"}";
 
-            return await PostRequest_v2<MediaResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            return PostRequest_v2<MediaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task<DeltaResult> FilesInFolder(string folderPath, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task<DeltaResult> FilesInFolder(string folderPath, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
             string data = "{\"path\":\"" + folderPath + "\", \"recursive\": true}";
-            string url = "/2/files/list_folder";
+            const string url = "/2/files/list_folder";
 
-            return await PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            return PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
 
-        public async Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
             string data = "{\"path\":\"\", \"recursive\": true}";
             string url = "/2/files/list_folder";
@@ -76,7 +76,7 @@ namespace Dropbox.Api
                 url = "/2/files/list_folder/continue";
             }
 
-            return await PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
+            return PostRequest_v2<DeltaResult>(url, accessToken, null, data, null, cancellationToken, logger);
         }
     }
 }

@@ -37,6 +37,7 @@ namespace Dropbox
                 return Plugin.Instance.DropboxApi;
             }
         }
+
         private IDropboxContentApi _dropboxContentApi
         {
             get
@@ -44,6 +45,7 @@ namespace Dropbox
                 return Plugin.Instance.DropboxContentApi;
             }
         }
+
         private readonly ILogger _logger;
 
         public DropboxServerSyncProvider(ILogManager logManager)
@@ -78,7 +80,7 @@ namespace Dropbox
 
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
 
-            await UploadFile(path, inputStream, syncAccount.AccessToken, cancellationToken);
+            await UploadFile(path, inputStream, progress, syncAccount.AccessToken, cancellationToken).ConfigureAwait(false);
 
             return new SyncedFileInfo
             {
@@ -99,7 +101,7 @@ namespace Dropbox
 
             try
             {
-                return await TryGetSyncedFileInfo(id, target, cancellationToken);
+                return await TryGetSyncedFileInfo(id, target, cancellationToken).ConfigureAwait(false);
             }
             catch (HttpException ex)
             {
@@ -112,21 +114,18 @@ namespace Dropbox
             }
         }
 
-        public async Task DeleteFile(string id, SyncTarget target, CancellationToken cancellationToken)
+        public async Task<bool> DeleteFile(SyncJob syncJob, string path, SyncTarget target, CancellationToken cancellationToken)
         {
             try
             {
                 var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
-                await _dropboxApi.Delete(id, syncAccount.AccessToken, cancellationToken, _logger);
+                await _dropboxApi.Delete(path, syncAccount.AccessToken, cancellationToken, _logger).ConfigureAwait(false);
+                return true;
             }
             catch (HttpException ex)
             {
-                if (ex.StatusCode == HttpStatusCode.NotFound)
-                {
-                    throw new FileNotFoundException("File not found", ex);
-                }
-
-                throw;
+                _logger.ErrorException("FolderSync: Error removing {0} from {1}.", ex, path, target.Name);
+                return false;
             }
         }
 
@@ -171,29 +170,36 @@ namespace Dropbox
             };
         }
 
-        private async Task UploadFile(string path, Stream stream, string accessToken, CancellationToken cancellationToken)
+        private async Task UploadFile(string path, Stream stream, IProgress<double> progress, string accessToken, CancellationToken cancellationToken)
         {
+            progress.Report(0.0);
+
             string session_id = null;
+            var streamLength = stream.Length;
             var offset = 0;
-            var buffer = await FillBuffer(stream, cancellationToken);
+            var buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
 
             if (buffer.Count > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken, _logger);
+                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken, _logger).ConfigureAwait(false);
                 session_id = result.session_id;
                 offset += buffer.Count;
-                buffer = await FillBuffer(stream, cancellationToken);
+                progress.Report((double)offset / streamLength * 100);
+                buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
             while (buffer.Count > 0)
             {
-                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken, _logger);
+                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
                 offset += buffer.Count;
-                buffer = await FillBuffer(stream, cancellationToken);
+                progress.Report((double)offset / streamLength * 100);
+                buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
             if (offset > 0)
-                await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken, _logger);
+            {
+                await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
+            }
         }
 
         private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
@@ -204,7 +210,7 @@ namespace Dropbox
             }
 
             var buffer = new byte[StreamBufferSize];
-            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, StreamBufferSize, cancellationToken);
+            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, StreamBufferSize, cancellationToken).ConfigureAwait(false);
             return new BufferArray(buffer, numberOfBytesRead);
         }
 
@@ -212,7 +218,7 @@ namespace Dropbox
         {
             var syncAccount = _configurationRetriever.GetSyncAccount(target.Id);
 
-            var shareResult = await _dropboxApi.Media(id, syncAccount.AccessToken, cancellationToken, _logger);
+            var shareResult = await _dropboxApi.Media(id, syncAccount.AccessToken, cancellationToken, _logger).ConfigureAwait(false);
 
             return new SyncedFileInfo
             {
@@ -262,7 +268,7 @@ namespace Dropbox
 
             while (deltaResult.has_more)
             {
-                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken, _logger);
+                deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken, _logger).ConfigureAwait(false);
 
                 var newFiles = deltaResult.entries
                     .Select(deltaEntry => deltaEntry.Metadata)
@@ -286,7 +292,7 @@ namespace Dropbox
 
             while (deltaResult.has_more)
             {
-                deltaResult = await _dropboxApi.FilesInFolder(folder, accessToken, cancellationToken, _logger);
+                deltaResult = await _dropboxApi.FilesInFolder(folder, accessToken, cancellationToken, _logger).ConfigureAwait(false);
 
                 var newFiles = deltaResult.entries
                     .Select(deltaEntry => deltaEntry.Metadata)
