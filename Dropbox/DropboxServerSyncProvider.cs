@@ -14,6 +14,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
+using MediaBrowser.Controller.Library;
 
 namespace Dropbox
 {
@@ -47,10 +48,12 @@ namespace Dropbox
         }
 
         private readonly ILogger _logger;
+        private IUserManager _userManager;
 
-        public DropboxServerSyncProvider(ILogManager logManager)
+        public DropboxServerSyncProvider(ILogManager logManager, IUserManager userManager)
         {
             _logger = logManager.GetLogger("Dropbox");
+            _userManager = userManager;
         }
 
         public string Name
@@ -68,9 +71,11 @@ namespace Dropbox
             return _configurationRetriever.GetSyncAccounts().Select(CreateSyncTarget).ToList();
         }
 
-        public List<SyncTarget> GetSyncTargets(string userId)
+        public List<SyncTarget> GetSyncTargets(long userId)
         {
-            return _configurationRetriever.GetUserSyncAccounts(userId).Select(CreateSyncTarget).ToList();
+            var userIdString = _userManager.GetGuid(userId).ToString("N");
+
+            return _configurationRetriever.GetUserSyncAccounts(userIdString).Select(CreateSyncTarget).ToList();
         }
 
         public async Task<SyncedFileInfo> SendFile(SyncJob syncJob, string originalMediaPath, Stream inputStream, bool isMedia, string[] outputPathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
