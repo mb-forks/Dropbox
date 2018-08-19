@@ -222,7 +222,7 @@ namespace Dropbox
 
             return new SyncedFileInfo
             {
-                Path = shareResult.url,
+                Path = shareResult.link,
                 Protocol = MediaProtocol.Http,
                 Id = id
             };
@@ -271,8 +271,7 @@ namespace Dropbox
                 deltaResult = await _dropboxApi.Delta(deltaResult.cursor, accessToken, cancellationToken, _logger).ConfigureAwait(false);
 
                 var newFiles = deltaResult.entries
-                    .Select(deltaEntry => deltaEntry.Metadata)
-                    .Where(metadata => metadata != null)
+                    .Where(e => e.id != null)
                     .Select(CreateFileMetadata);
 
                 files.AddRange(newFiles);
@@ -295,8 +294,7 @@ namespace Dropbox
                 deltaResult = await _dropboxApi.FilesInFolder(folder, accessToken, cancellationToken, _logger).ConfigureAwait(false);
 
                 var newFiles = deltaResult.entries
-                    .Select(deltaEntry => deltaEntry.Metadata)
-                    .Where(metadata => metadata != null)
+                    .Where(e => e.id != null)
                     .Select(CreateFileMetadata)
                     .Where(fsi => !fsi.IsDirectory);
 
@@ -310,7 +308,7 @@ namespace Dropbox
             };
         }
 
-        private static FileSystemMetadata CreateFileMetadata(MetadataResult metadata)
+        private static FileSystemMetadata CreateFileMetadata(Metadata metadata)
         {
             return new FileSystemMetadata
             {

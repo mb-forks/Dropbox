@@ -1,10 +1,10 @@
-﻿using System;
-
+﻿
 namespace Dropbox.Api
 {
     public class MediaResult
     {
-        public string url { get; set; }
-        public DateTime expires { get; set; }
+        public Metadata metadata { get; set; }
+
+        public string link { get; set; }
     }
 }

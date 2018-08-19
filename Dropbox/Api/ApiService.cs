@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,7 +61,7 @@ namespace Dropbox.Api
             {
                 if (content != "_download")
                 {
-                    httpRequest.RequestContent = content;
+                    httpRequest.RequestContent = content.AsMemory();
                     logger.Debug("Content: " + content);
                 }
                 else
@@ -81,6 +82,18 @@ namespace Dropbox.Api
             logger.Debug("Send httpRequest");
             var result = await _httpClient.Post(httpRequest).ConfigureAwait(false);
             logger.Debug("Received HttpResponseInfo");
+
+            // Workaround for ServiceStack being unable to deserialize property names containing a leading dot
+            if (typeof(T) == typeof(DeltaResult))
+            {
+                using (var reader = new StreamReader(result.Content))
+                {
+                    var json = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    json = json.Replace("\".tag\":", "\"tag\":");
+                    return _jsonSerializer.DeserializeFromString<T>(json);
+                }
+            }
 
             return await _jsonSerializer.DeserializeFromStreamAsync<T>(result.Content).ConfigureAwait(false);
         }

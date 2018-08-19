@@ -7,7 +7,7 @@ namespace Dropbox.Api
     public interface IDropboxApi
     {
         Task<AuthorizationToken> AcquireToken(string code, string appKey, string appSecret, CancellationToken cancellationToken);
-        Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
+        Task<Metadata> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
         Task Delete(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
         Task<MediaResult> Media(string path, string accessToken, CancellationToken cancellationToken, ILogger logger);
         Task<DeltaResult> Delta(string cursor, string accessToken, CancellationToken cancellationToken, ILogger logger);
