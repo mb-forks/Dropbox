@@ -32,12 +32,12 @@ namespace Dropbox.Api
             return PostRequest<AuthorizationToken>("/oauth2/token", null, data, cancellationToken);
         }
 
-        public async Task<MetadataResult> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
+        public async Task<Metadata> Metadata(string path, string accessToken, CancellationToken cancellationToken, ILogger logger)
         {
             const string url = "/2/files/get_metadata";
             string data = "{\"path\":\"" + path + "\", \"include_deleted\": false}";
 
-            var result = await PostRequest_v2<MetadataResult>(url, accessToken, null, data, null, cancellationToken, logger).ConfigureAwait(false);
+            var result = await PostRequest_v2<Metadata>(url, accessToken, null, data, null, cancellationToken, logger).ConfigureAwait(false);
             return result;
         }
 

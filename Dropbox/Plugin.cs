@@ -26,7 +26,8 @@ namespace Dropbox
             DropboxContentApi = new DropboxContentApi(httpClient, jsonSerializer, applicationHost);
         }
 
-        private Guid _id = new Guid("830fc68f-b964-4d2f-b139-48e22cd143c7");
+        private readonly Guid _id = new Guid("830fc68f-b964-4d2f-b139-48e22cd143c7");
+
         public override Guid Id
         {
             get { return _id; }
