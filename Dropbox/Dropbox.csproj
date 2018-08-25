@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mediabrowser.server.core" Version="3.6.0.13-beta" />
+    <PackageReference Include="mediabrowser.server.core" Version="3.6.0.19-beta" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
 
