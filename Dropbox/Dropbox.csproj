@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;</TargetFrameworks>
-    <AssemblyVersion>3.2.1</AssemblyVersion>
-    <FileVersion>3.2.1</FileVersion>
+    <AssemblyVersion>3.2.2</AssemblyVersion>
+    <FileVersion>3.2.2</FileVersion>
     <Configurations>Debug;Release;DebugCopyPlugin</Configurations>
   </PropertyGroup>
 
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="mediabrowser.server.core" Version="3.6.0.19-beta" />
+    <PackageReference Include="mediabrowser.server.core" Version="3.6.0.26-beta" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
 
