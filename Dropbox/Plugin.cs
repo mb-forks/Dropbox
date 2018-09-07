@@ -8,10 +8,12 @@ using MediaBrowser.Model.Serialization;
 using MediaBrowser.Common.Net;
 using Dropbox.Api;
 using MediaBrowser.Common;
+using System.IO;
+using MediaBrowser.Model.Drawing;
 
 namespace Dropbox
 {
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
     {
         public static Plugin Instance { get; private set; }
         public readonly IConfigurationRetriever ConfigurationRetriever = new ConfigurationRetriever();
@@ -53,6 +55,20 @@ namespace Dropbox
         public override string Description
         {
             get { return Constants.Description; }
+        }
+
+        public Stream GetThumbImage()
+        {
+            var type = GetType();
+            return type.Assembly.GetManifestResourceStream(type.Namespace + ".thumb.png");
+        }
+
+        public ImageFormat ThumbImageFormat
+        {
+            get
+            {
+                return ImageFormat.Png;
+            }
         }
     }
 }
