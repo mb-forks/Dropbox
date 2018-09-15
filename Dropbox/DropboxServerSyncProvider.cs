@@ -21,7 +21,7 @@ namespace Dropbox
     public class DropboxServerSyncProvider : IServerSyncProvider, IHasDynamicAccess, IRemoteSyncProvider
     {
         // 10mb
-        private const int StreamBufferSize = 10 * 1024 * 1024;
+        private const long StreamBufferSize = 10 * 1024 * 1024;
 
         private IConfigurationRetriever _configurationRetriever
         {
@@ -181,42 +181,36 @@ namespace Dropbox
 
             string session_id = null;
             var streamLength = stream.Length;
-            var offset = 0;
-            var buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
+            long offset = 0;
+            stream.Position = 0;
 
-            if (buffer.Count > 0)
+            ////var buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
+
+            var chunkSize = Math.Min(streamLength, StreamBufferSize);
+            
+            var sectionStream = new SubSectionStream(stream, 0, chunkSize);
+
+            if (chunkSize > 0)
             {
-                var result = await _dropboxContentApi.ChunkedUpload_Start(buffer.Array, accessToken, cancellationToken, _logger).ConfigureAwait(false);
+                var result = await _dropboxContentApi.ChunkedUpload_Start(sectionStream, accessToken, cancellationToken, _logger).ConfigureAwait(false);
                 session_id = result.session_id;
-                offset += buffer.Count;
+                offset += chunkSize;
                 progress.Report((double)offset / streamLength * 100);
-                buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
-            while (buffer.Count > 0)
+            while (offset < streamLength)
             {
-                await _dropboxContentApi.ChunkedUpload_Append(session_id, buffer.Array, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
-                offset += buffer.Count;
+                chunkSize = Math.Min(streamLength - offset, StreamBufferSize);
+                sectionStream = new SubSectionStream(stream, offset, chunkSize);
+                await _dropboxContentApi.ChunkedUpload_Append(session_id, sectionStream, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
+                offset += chunkSize;
                 progress.Report((double)offset / streamLength * 100);
-                buffer = await FillBuffer(stream, cancellationToken).ConfigureAwait(false);
             }
 
             if (offset > 0)
             {
                 await _dropboxContentApi.ChunkedUpload_Commit(path, session_id, offset, accessToken, cancellationToken, _logger).ConfigureAwait(false);
             }
-        }
-
-        private static async Task<BufferArray> FillBuffer(Stream stream, CancellationToken cancellationToken)
-        {
-            if (stream.Position >= stream.Length)
-            {
-                return new BufferArray();
-            }
-
-            var buffer = new byte[StreamBufferSize];
-            var numberOfBytesRead = await stream.ReadAsync(buffer, 0, StreamBufferSize, cancellationToken).ConfigureAwait(false);
-            return new BufferArray(buffer, numberOfBytesRead);
         }
 
         private async Task<SyncedFileInfo> TryGetSyncedFileInfo(string id, SyncTarget target, CancellationToken cancellationToken)
